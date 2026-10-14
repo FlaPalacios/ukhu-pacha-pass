@@ -1,7 +1,6 @@
 ---
 name: cierre-de-fase
 description: Cierra y verifica una fase del plan de Ukhu Pacha Pass. Comprueba el criterio de terminado, corre typecheck, lint, build y pruebas, lanza los subagentes revisores y entrega un veredicto APROBADA o NO APROBADA. Usar solo cuando el usuario escriba /cierre-de-fase o pida cerrar o verificar una fase.
-disable-model-invocation: true
 argument-hint: "[número de fase, opcional]"
 ---
 

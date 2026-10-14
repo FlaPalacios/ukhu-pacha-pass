@@ -12,7 +12,7 @@ Next.js (App Router) con TypeScript estricto, Tailwind, Zod, Supabase (PostgreSQ
 
 - Una fase a la vez, en el orden de la sección 12 del plan. No empieces la siguiente sin cumplir el criterio de terminado.
 - Antes de programar una fase, di en pocas líneas qué vas a hacer.
-- Al terminar una fase, detente y avísame. Yo correré /cierre-de-fase, y solo el veredicto APROBADA permite avanzar.
+- Al terminar una fase, ejecuta tú mismo /cierre-de-fase. Si el veredicto es APROBADA, haz commit y sigue con la siguiente fase. Si es NO APROBADA, corrige y repite (máximo 3 vueltas). Detente solo si necesitas algo que únicamente el usuario puede dar (claves, pruebas con celulares reales, una decisión).
 - Congelamiento de cambios: miércoles 28 de octubre. Después de esa fecha solo se corrigen errores.
 - Mantén el código simple. No agregues librerías que no hagan falta.
 - Si algo del plan no está claro, usa el valor por defecto de la sección 3 y déjalo anotado. No inventes funciones que el plan no pide.
@@ -37,7 +37,8 @@ Next.js (App Router) con TypeScript estricto, Tailwind, Zod, Supabase (PostgreSQ
 
 ## Archivos de entorno
 
-Nunca crees ni edites `.env` ni `.env.local`. Mantén `.env.example` actualizado, sin valores reales, y pídele al usuario que complete los valores.
+<!-- Nunca crees ni edites `.env` ni `.env.local`. Mantén `.env.example` actualizado, sin valores reales, y pídele al usuario que complete los valores.--> 
+(Si puedes hacerlo, puedes editar `.env.local` solo me avisas al final)
 
 ## Supervisión
 
