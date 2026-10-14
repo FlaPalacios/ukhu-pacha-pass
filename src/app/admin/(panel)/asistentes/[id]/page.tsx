@@ -59,6 +59,11 @@ export default async function Ficha({ params, searchParams }: PageProps<"/admin/
           El registro se creó, pero el pago no se pudo marcar. Márcalo abajo.
         </p>
       )}
+      {aviso === "ingreso-pendiente" && (
+        <p role="alert" className="mt-4 rounded border border-rosa p-4 font-lora">
+          Quedó pagado, pero el ingreso no se pudo marcar. Escanéalo o búscalo por DNI en la puerta.
+        </p>
+      )}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <section>

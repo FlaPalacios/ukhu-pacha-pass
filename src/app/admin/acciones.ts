@@ -13,9 +13,10 @@ import {
   unoParaEnviar,
 } from "@/lib/asistentes";
 import { enviarLote, MAX_LOTE, reservarLote } from "@/lib/envios";
+import { registrarIngreso } from "@/lib/puerta";
 import { dentroDelLimite, huellaIp } from "@/lib/limite-intentos";
 import type { ResultadoAccion } from "@/lib/resultado";
-import { abrirSesion, cerrarSesion } from "@/lib/sesion";
+import { abrirSesionAdmin, cerrarSesion } from "@/lib/sesion";
 import { supabaseServidor } from "@/lib/supabase-servidor";
 import {
   edicionSchema,
@@ -73,7 +74,7 @@ export async function iniciarSesion(_p: ResultadoAccion, fd: FormData): Promise<
     if (errPerfil) throw new Error(`admin_profiles falló (${errPerfil.code})`);
     if (!perfil || !perfil.activo) return { error: "Correo o contraseña incorrectos." };
 
-    await abrirSesion("admin", perfil.id);
+    await abrirSesionAdmin(perfil.id);
   } catch (e) {
     registrarFallo("login", e);
     return { error: ERROR_GENERAL };
@@ -252,12 +253,29 @@ export async function accionCrearAsistente(
   }
 
   if (d.monto !== null) {
+    let pagado = false;
     try {
-      await marcarPagado(data.id, d.monto, admin.id);
+      pagado = await marcarPagado(data.id, d.monto, admin.id);
     } catch (e) {
       registrarFallo("crear asistente: pago", e);
+    }
+    if (!pagado) {
       refrescar(data.id);
       redirect(`/admin/asistentes/${data.id}?aviso=pago-pendiente`);
+    }
+
+    // Registro en puerta con ingreso inmediato: el mismo ingreso atómico del escáner.
+    if (d.ingresar) {
+      let ingreso = false;
+      try {
+        ingreso = (await registrarIngreso("dni", d.dni, admin.nombre)).resultado === "valido";
+      } catch (e) {
+        registrarFallo("crear asistente: ingreso", e);
+      }
+      if (!ingreso) {
+        refrescar(data.id);
+        redirect(`/admin/asistentes/${data.id}?aviso=ingreso-pendiente`);
+      }
     }
   }
 

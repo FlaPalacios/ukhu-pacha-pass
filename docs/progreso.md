@@ -8,7 +8,7 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 | 1. Registro público | Mié 14 a Vie 16 | APROBADA | Mar 13 |
 | 2. Panel admin | Vie 16 a Dom 18 | APROBADA | Mar 13 |
 | 3. QR y correo | Lun 19 a Mié 21 | APROBADA | Mar 13 |
-| 4. Escáner | Jue 22 a Vie 23 | Pendiente | |
+| 4. Escáner | Jue 22 a Vie 23 | APROBADA | Mié 14 |
 | 5. Resumen y gastos | Sáb 24 | Pendiente | |
 | 6. Pulido visual | Dom 25 | Pendiente | |
 | 7. Pruebas | Lun 26 a Mié 28 | Pendiente | |
@@ -68,3 +68,19 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 - Prueba 13.3 (fallo de correo y reintento): la lógica está y fue revisada, pero el fallo por dirección rechazada no se simuló contra Gmail. Requiere prueba manual en la fase 7: poner a mano `correo_error` en un registro de prueba y usar "Reintentar".
 - Pendientes: cargar `APP_URL=https://ukhu-pacha-pass.vercel.app`, `GMAIL_USER` y `GMAIL_APP_PASSWORD` en Vercel. Revisar en producción que la cookie salga con Secure (pendiente de la fase 2).
 - Decisión fuera del plan: columna `attendees.correo_error` (la sección 8 pide registrar el error del envío).
+
+### Fase 4: Escáner. Miércoles 14 de octubre. APROBADA (3 vueltas)
+
+- Criterio: dos celulares escaneando el mismo QR, solo uno ingresa. Probado contra la base: 10 escaneos simultáneos del mismo token dan exactamente 1 válido y 9 repetido. La función `registrar_ingreso` es un único UPDATE ... WHERE estado = 'pagado' RETURNING, con el registro en scan_log en la misma transacción.
+- Probado: código corto (también en minúsculas), DNI con confirmación previa del nombre, pendiente -> no pagado, cancelado -> cancelado (estado intacto), inexistente y QR ajeno -> no encontrado, menor con franja propia, una fila de scan_log por escaneo, sesión de guardia sin acceso al panel, sin sesión -> "volver a ingresar el PIN", Origin ajeno o "null" -> 403, cuerpo no JSON -> 415.
+- PIN (probado con el cuerpo real que arma React): 8 intentos errados por IP en 15 min, el 9.º bloqueado; un acierto reinicia el contador. Mínimo 8 caracteres. IPv6 agrupada por /64.
+- tsc, lint y build sin errores. No hay `npm test`. Sin secretos en el bundle del cliente. `npm audit --omit=dev` sin vulnerabilidades. jsqr 1.4.0 fijado.
+- Vuelta 1, NO APROBADA: probador-puerta ALTO (las Server Actions se ejecutan en fila: un escaneo colgado frenaba a los siguientes y luego se marcaban tarde) y ALTO (el límite del PIN contaba también los aciertos). Corregido: escaneo por ruta HTTP con fetch y corte a 8 s; límite que no castiga aciertos. Más MEDIOS: sesión vencida, base caída vs sesión, relectura del mismo QR, cámara cortada, búsqueda por DNI con confirmación, datos mínimos al guardia, puesto (Puerta 1 / Puerta 2).
+- Vuelta 2, NO APROBADA: la conversión de "repetido" a "válido" en el cliente tras un timeout (agregada en la vuelta 1) podía dar un falso válido con un QR copiado. Eliminada por completo. Corregidos además: PIN con pedidos simultáneos (se reserva el intento antes de comparar), Origin mal formado, doble toque en Confirmar, cámara en pausa, IPv6.
+- Vuelta 3: probador-puerta LISTO, revisor-seguridad SIN BLOQUEOS. Corregido el BAJO de IPv4 escrita como IPv6.
+- Pendientes:
+  - El usuario debe cambiar GUARD_PIN a 8+ caracteres (hoy tiene 6) en .env.local y en Vercel. Hasta entonces nadie entra con PIN; los admins sí, con su sesión.
+  - Migración de la fase 5: agregar 'por_confirmar' a resultado_escaneo y registrar en scan_log la consulta por DNI y el "No coincide".
+  - Capacitación (fase 8): tras un "Sin respuesta", si al reintentar sale "Ya ingresó" con su puesto y hora de segundos atrás, pedir el DNI físico o llamar a un admin. Los guardias usan datos móviles o el punto de acceso de la organización, no el WiFi del local (el límite de PIN es por IP).
+  - Pruebas con celulares reales (fase 7): lista de 17 pasos del probador-puerta (cámara trasera Android/iPhone, QR en pantalla y papel, poca luz, tiempo < 2 s, modo avión, 3G lento, QR copiado, dos celulares, DNI y doble toque, cámara interrumpida, PIN, sesión vencida, registro rápido, menor, carga con 4 a 6 celulares).
+- Datos de prueba: DNI 10000001 a 10000005 (varios ya ingresados) y filas de scan_log con dispositivo "prueba".

@@ -100,9 +100,14 @@ export const registroAdminSchema = z
     origen: z.enum(["admin", "puerta"], { error: "Elige el origen." }),
     es_menor: casilla,
     pagar: casilla,
+    ingresar: casilla,
     monto: z.string().optional(),
   })
   .transform((d, ctx) => {
+    if (d.ingresar && !d.pagar) {
+      ctx.addIssue({ code: "custom", message: "Para marcar el ingreso, primero debe estar pagado.", path: ["ingresar"] });
+      return z.NEVER;
+    }
     if (!d.pagar) return { ...d, monto: null };
     const m = montoSchema.safeParse(d.monto ?? "");
     if (!m.success) {
