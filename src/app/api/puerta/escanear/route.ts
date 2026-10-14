@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { dentroDelLimite, huellaIp } from "@/lib/limite-intentos";
-import { accesoPuerta, interpretar, pagadoPorDni, registrarIngreso } from "@/lib/puerta";
+import { accesoPuerta, anotarConsultaDni, interpretar, pagadoPorDni, registrarIngreso } from "@/lib/puerta";
 import type { RespuestaEscaneo } from "@/lib/puerta-tipos";
 
 // Ruta HTTP y no Server Action: las Server Actions se ejecutan en fila en el navegador,
@@ -12,6 +12,8 @@ const entradaSchema = z.object({
   valor: z.string().max(200),
   // Solo para DNI: el guardia ya comparó el nombre con el DNI físico.
   confirmado: z.boolean().optional(),
+  // Solo para DNI: el documento no coincide; se anota en scan_log y no se marca nada.
+  noCoincide: z.boolean().optional(),
 });
 
 // Tope generoso: dos puertas en hora punta no llegan; un script recorriendo DNIs sí.
@@ -66,10 +68,21 @@ export async function POST(request: Request) {
       return responder({ ok: false, error: "Demasiadas consultas seguidas. Espera un minuto." });
     }
 
+    // El guardia vio que el DNI físico no coincide: solo se anota, no se marca nada.
+    // Una señal de "no dejar pasar" nunca debe terminar en un ingreso marcado.
+    if (e.data.noCoincide) {
+      if (consulta.metodo !== "dni") return responder({ ok: false, error: "Lectura no válida." }, 400);
+      await anotarConsultaDni(consulta.valor, "no_coincide", acceso.quien);
+      return responder({ ok: true, anotado: true });
+    }
+
     // El DNI no es secreto: antes de marcar, el guardia confirma el nombre con el DNI físico.
     if (consulta.metodo === "dni" && !e.data.confirmado) {
-      const nombre = await pagadoPorDni(consulta.valor);
-      if (nombre) return responder({ ok: true, confirmar: { nombre, dni: consulta.valor } });
+      const pagado = await pagadoPorDni(consulta.valor);
+      if (pagado) {
+        await anotarConsultaDni(consulta.valor, "por_confirmar", acceso.quien, pagado.id);
+        return responder({ ok: true, confirmar: { nombre: pagado.nombre, dni: consulta.valor } });
+      }
       // Si no está pagado, el ingreso atómico igual rechaza y deja el motivo en scan_log.
     }
 

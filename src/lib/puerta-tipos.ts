@@ -20,4 +20,5 @@ export type Escaneo = {
 export type RespuestaEscaneo =
   | { ok: true; escaneo: Escaneo }
   | { ok: true; confirmar: { nombre: string; dni: string } }
+  | { ok: true; anotado: true }
   | { ok: false; error: string; sinSesion?: boolean };

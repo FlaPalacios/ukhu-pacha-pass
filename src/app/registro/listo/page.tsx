@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Encabezado } from "@/components/encabezado";
-import { evento, precioEntrada } from "@/config/evento";
+import { evento } from "@/config/evento";
+import { obtenerConfig } from "@/lib/config";
 
 export const metadata: Metadata = { title: "Registro listo | Ukhu Pacha Pass" };
 
-export default function RegistroListo() {
-  const precio = precioEntrada();
+export const revalidate = 60;
+
+export default async function RegistroListo() {
+  const { precio } = await obtenerConfig();
 
   return (
     <>

@@ -1,9 +1,13 @@
 import Link from "next/link";
-import { evento, precioEntrada } from "@/config/evento";
+import { evento } from "@/config/evento";
+import { obtenerConfig } from "@/lib/config";
 import { Apus, Chakana, Franja } from "@/components/motivos";
 
-export default function Inicio() {
-  const precio = precioEntrada();
+// El precio sale de la configuración; la página se regenera cada minuto.
+export const revalidate = 60;
+
+export default async function Inicio() {
+  const { precio } = await obtenerConfig();
 
   return (
     <>

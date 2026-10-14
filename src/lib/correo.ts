@@ -1,6 +1,6 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
-import { evento, precioEntrada } from "@/config/evento";
+import { evento } from "@/config/evento";
 import { qrPng } from "./qr";
 
 export type DatosEntrada = { nombre: string; correo: string; codigo: string; token: string };
@@ -37,14 +37,14 @@ export function crearTransporte(): Transporter {
   });
 }
 
-export async function enviarEntrada(t: Transporter, d: DatosEntrada): Promise<void> {
+export async function enviarEntrada(t: Transporter, d: DatosEntrada, precio: number): Promise<void> {
   const enlace = urlEntrada(d.token);
   await t.sendMail({
     from: { name: evento.nombre, address: process.env.GMAIL_USER ?? "" },
     to: d.correo,
     subject: `Tu entrada para ${evento.nombre}, ${evento.fecha}`,
     text: textoPlano(d, enlace),
-    html: html(d, enlace),
+    html: html(d, enlace, precio),
     attachments: [
       { filename: `entrada-${d.codigo}.png`, content: await qrPng(d.token), cid: "qr-entrada" },
     ],
@@ -106,7 +106,7 @@ function textoPlano(d: DatosEntrada, enlace: string): string {
 }
 
 // Correo simple con estilos en línea (los clientes de correo ignoran las hojas de estilo).
-function html(d: DatosEntrada, enlace: string): string {
+function html(d: DatosEntrada, enlace: string, precio: number): string {
   const nombre = escapar(d.nombre);
   return `<!doctype html>
 <html lang="es"><body style="margin:0;padding:0;background:#0a0a0a;">
@@ -123,7 +123,7 @@ function html(d: DatosEntrada, enlace: string): string {
     <tr><td style="padding:4px 16px 4px 0;color:#9a9f9c;">Fecha</td><td>${escapar(evento.fecha)}</td></tr>
     <tr><td style="padding:4px 16px 4px 0;color:#9a9f9c;">Hora</td><td>${escapar(evento.hora)}</td></tr>
     <tr><td style="padding:4px 16px 4px 0;color:#9a9f9c;">Lugar</td><td>${escapar(evento.lugar)}</td></tr>
-    <tr><td style="padding:4px 16px 4px 0;color:#9a9f9c;">Entrada</td><td>S/ ${precioEntrada()}</td></tr>
+    <tr><td style="padding:4px 16px 4px 0;color:#9a9f9c;">Entrada</td><td>S/ ${precio}</td></tr>
   </table>
   <p style="font-size:16px;">Muestra el QR en la puerta. Si no carga, dicta tu código de 6 letras.
   También puedes abrir tu entrada aquí: <a href="${escapar(enlace)}" style="color:#f7931e;">ver mi entrada</a>.</p>

@@ -75,6 +75,16 @@ export function Escaner({ ingresadosIniciales }: { ingresadosIniciales: number }
     setVista({ tipo: "escaneando" });
   }
 
+  // El DNI físico no coincide: se anota en scan_log (sin esperar ni bloquear) y se sigue.
+  function noCoincide(dni: string) {
+    void fetch("/api/puerta/escanear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipo: "manual", valor: dni, noCoincide: true }),
+    }).catch(() => {});
+    siguiente();
+  }
+
   function reabrirCamara() {
     setCamara("iniciando");
     setIntentoCamara((n) => n + 1);
@@ -235,6 +245,7 @@ export function Escaner({ ingresadosIniciales }: { ingresadosIniciales: number }
           r={vista.r}
           alSeguir={siguiente}
           alConfirmar={(dni) => void consultar("manual", dni, true)}
+          alDescartar={noCoincide}
         />
       )}
     </>
@@ -260,10 +271,12 @@ function Pantalla({
   r,
   alSeguir,
   alConfirmar,
+  alDescartar,
 }: {
   r: RespuestaEscaneo;
   alSeguir: () => void;
   alConfirmar: (dni: string) => void;
+  alDescartar: (dni: string) => void;
 }) {
   if (r.ok && "confirmar" in r) {
     return (
@@ -278,7 +291,7 @@ function Pantalla({
           <button onClick={() => alConfirmar(r.confirmar.dni)} className="rounded bg-naranja py-6 text-3xl text-tinta">
             Confirmar ingreso
           </button>
-          <button onClick={alSeguir} className="rounded border border-rosa py-5 text-2xl">
+          <button onClick={() => alDescartar(r.confirmar.dni)} className="rounded border border-rosa py-5 text-2xl">
             No coincide, cancelar
           </button>
         </div>
@@ -293,6 +306,10 @@ function Pantalla({
   if (!r.ok) {
     titulo = r.sinSesion ? "Sesión vencida" : "Error";
     detalle = <p className="text-2xl">{r.error}</p>;
+  } else if (!("escaneo" in r)) {
+    // No debería llegar aquí: cualquier respuesta inesperada se muestra como error.
+    titulo = "Error";
+    detalle = <p className="text-2xl">Respuesta inesperada. No dejes pasar todavía: vuelve a intentar.</p>;
   } else {
     const e = r.escaneo;
     const fecha = e.ingresadoEn ? new Date(e.ingresadoEn) : null;
@@ -345,7 +362,7 @@ function Pantalla({
     }
   }
 
-  const menor = r.ok && r.escaneo.resultado === "valido" && r.escaneo.esMenor;
+  const menor = r.ok && "escaneo" in r && r.escaneo.resultado === "valido" && r.escaneo.esMenor;
   const sinSesion = !r.ok && r.sinSesion;
 
   return (

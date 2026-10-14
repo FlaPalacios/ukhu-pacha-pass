@@ -130,6 +130,37 @@ export const edicionSchema = z.object({
     .transform((v) => (v === "" ? null : v)),
 });
 
+// Resumen y gastos
+
+export const configSchema = z.object({
+  precio: montoSchema,
+  aforo: z.coerce
+    .number({ error: "Escribe el aforo." })
+    .int("El aforo es un número entero.")
+    .min(1, "El aforo debe ser mayor que cero.")
+    .max(5000, "El aforo parece demasiado alto."),
+});
+
+export const gastoSchema = z.object({
+  concepto: z
+    .string()
+    .trim()
+    .min(2, "Escribe el concepto.")
+    .max(120, "El concepto es demasiado largo."),
+  monto: z
+    .string()
+    .trim()
+    .transform((v) => Number(v.replace(",", ".")))
+    .pipe(
+      z
+        .number({ error: "Escribe un monto válido." })
+        .positive("El monto debe ser mayor que cero.")
+        .max(100000, "El monto parece demasiado alto.")
+        .multipleOf(0.01, "Usa como máximo dos decimales."),
+    ),
+  fecha: z.iso.date("Fecha no válida.").optional().or(z.literal("").transform(() => undefined)),
+});
+
 // Lee un FormData como objeto de textos. Las casillas sin marcar no vienen.
 export function textosDe(fd: FormData): Record<string, string> {
   const datos: Record<string, string> = {};

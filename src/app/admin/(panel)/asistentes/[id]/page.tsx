@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Estado } from "@/components/estado";
 import { FormAccion } from "@/components/form-accion";
-import { precioEntrada } from "@/config/evento";
+import { obtenerConfig } from "@/lib/config";
 import { exigirAdmin } from "@/lib/admin";
 import { historialPagos, obtenerAsistente, tokenDe, type MovimientoPago } from "@/lib/asistentes";
 import { urlEntrada } from "@/lib/correo";
@@ -38,6 +38,7 @@ export default async function Ficha({ params, searchParams }: PageProps<"/admin/
   const a = await obtenerAsistente(id);
   if (!a) notFound();
   const historial = await historialPagos(id);
+  const { precio } = await obtenerConfig();
   const token = a.estado === "pagado" ? await tokenDe(id) : null;
   const enlace = token ? urlEntrada(token) : null;
   const ultimoPago = historial.find((h) => h.accion === "marcar_pagado");
@@ -111,7 +112,7 @@ export default async function Ficha({ params, searchParams }: PageProps<"/admin/
                   <input
                     name="monto"
                     inputMode="decimal"
-                    defaultValue={precioEntrada()}
+                    defaultValue={precio}
                     required
                     className={`${campo} max-w-40`}
                   />

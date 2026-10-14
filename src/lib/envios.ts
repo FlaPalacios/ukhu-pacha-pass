@@ -1,5 +1,6 @@
 import "server-only";
 import { registrarEnvio, type ParaCorreo } from "./asistentes";
+import { obtenerConfig } from "./config";
 import { clasificarFallo, crearTransporte, enviarEntrada } from "./correo";
 import { dentroDelLimite } from "./limite-intentos";
 
@@ -22,6 +23,7 @@ export async function reservarLote(): Promise<boolean> {
 export async function enviarLote(filas: ParaCorreo[]): Promise<ResultadoLote> {
   const r: ResultadoLote = { enviados: 0, fallidos: 0 };
   const inicio = Date.now();
+  const { precio } = await obtenerConfig();
 
   let transporte;
   try {
@@ -43,7 +45,7 @@ export async function enviarLote(filas: ParaCorreo[]): Promise<ResultadoLote> {
           correo: f.correo,
           codigo: f.codigo_corto,
           token: f.qr_token,
-        });
+        }, precio);
       } catch (e) {
         const fallo = clasificarFallo(e);
         console.error(`correo: envío falló (${fallo.codigo})`);

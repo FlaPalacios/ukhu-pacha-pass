@@ -81,17 +81,37 @@ export async function registrarIngreso(metodo: Metodo, valor: string, por: strin
   };
 }
 
-// Solo lectura, para la búsqueda por DNI: el guardia confirma el nombre con el DNI físico
-// antes de marcar el ingreso. Devuelve el nombre solo si está pagado.
-export async function pagadoPorDni(dni: string): Promise<string | null> {
+// Para la búsqueda por DNI: el guardia confirma el nombre con el DNI físico antes de marcar
+// el ingreso. No cambia el estado. Devuelve id y nombre solo si está pagado.
+export async function pagadoPorDni(dni: string): Promise<{ id: string; nombre: string } | null> {
   const { data, error } = await supabaseServidor()
     .from("attendees")
-    .select("nombre")
+    .select("id, nombre")
     .eq("dni", dni)
     .eq("estado", "pagado")
     .maybeSingle();
   if (error) throw new Error(`buscar por DNI falló (${error.code})`);
-  return data?.nombre ?? null;
+  return data;
+}
+
+// Deja en scan_log una consulta por DNI que no marca ingreso: la consulta previa
+// ("por_confirmar") o el guardia que vio que el documento no coincide ("no_coincide").
+export async function anotarConsultaDni(
+  dni: string,
+  resultado: "por_confirmar" | "no_coincide",
+  por: string,
+  attendeeId?: string,
+): Promise<void> {
+  let id = attendeeId ?? null;
+  if (!id) {
+    const { data, error } = await supabaseServidor().from("attendees").select("id").eq("dni", dni).maybeSingle();
+    if (error) throw new Error(`buscar por DNI falló (${error.code})`);
+    id = data?.id ?? null;
+  }
+  const { error } = await supabaseServidor()
+    .from("scan_log")
+    .insert({ attendee_id: id, resultado, metodo: "dni", dispositivo: por.slice(0, 60) });
+  if (error) throw new Error(`anotar consulta falló (${error.code})`);
 }
 
 export async function contarIngresados(): Promise<number> {

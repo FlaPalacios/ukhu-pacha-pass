@@ -9,7 +9,7 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 | 2. Panel admin | Vie 16 a Dom 18 | APROBADA | Mar 13 |
 | 3. QR y correo | Lun 19 a Mié 21 | APROBADA | Mar 13 |
 | 4. Escáner | Jue 22 a Vie 23 | APROBADA | Mié 14 |
-| 5. Resumen y gastos | Sáb 24 | Pendiente | |
+| 5. Resumen y gastos | Sáb 24 | APROBADA | Mié 14 |
 | 6. Pulido visual | Dom 25 | Pendiente | |
 | 7. Pruebas | Lun 26 a Mié 28 | Pendiente | |
 | 8. Operación | Jue 29 a Vie 30 | Pendiente | |
@@ -84,3 +84,15 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
   - Capacitación (fase 8): tras un "Sin respuesta", si al reintentar sale "Ya ingresó" con su puesto y hora de segundos atrás, pedir el DNI físico o llamar a un admin. Los guardias usan datos móviles o el punto de acceso de la organización, no el WiFi del local (el límite de PIN es por IP).
   - Pruebas con celulares reales (fase 7): lista de 17 pasos del probador-puerta (cámara trasera Android/iPhone, QR en pantalla y papel, poca luz, tiempo < 2 s, modo avión, 3G lento, QR copiado, dos celulares, DNI y doble toque, cámara interrumpida, PIN, sesión vencida, registro rápido, menor, carga con 4 a 6 celulares).
 - Datos de prueba: DNI 10000001 a 10000005 (varios ya ingresados) y filas de scan_log con dispositivo "prueba".
+
+### Fase 5: Resumen y gastos. Miércoles 14 de octubre. APROBADA
+
+- Criterio: los números coinciden con la base. Comparado por script: base y panel dan los mismos pendientes (0), pagados (0), ingresados (4), cancelados (1), recaudado (S/ 80.00) y vendidas (4 / 250).
+- Probado contra Supabase: gasto "35,50" guardado como 35.5 con balance y equilibrio recalculados y luego quitado; gasto inválido rechazado; configuración 25/260 aplicada (monto sugerido 25) y vuelta a 20/250; configuración inválida rechazada; un guardia no pudo crear gastos ni cambiar la configuración; CSV sin sesión o con guardia da 401; CSV de admin con BOM, filas correctas, tildes y eñes; scan_log registra por_confirmar y no_coincide sin cambiar el estado; anon no lee settings ni expenses.
+- tsc, lint y build sin errores. No hay `npm test`. Sin secretos en el bundle del cliente. `npm audit --omit=dev` sin vulnerabilidades.
+- revisor-seguridad: sin CRÍTICOS ni ALTOS. Corregidos: MEDIO (el CSV de pagados, que se imprime para la puerta, ahora lleva solo nombre, DNI enmascarado ****1234, código, estado, menor e ingreso; el CSV "todos" sigue completo para admins), BAJO (noCoincide con código o QR responde 400 y nunca marca ingreso), BAJO (error revisado al anotar consulta por DNI), columna "Ingreso marcado por".
+- Pendientes:
+  - Fase 7 (prueba 13.13): abrir los dos CSV en Excel del usuario. Si todo aparece en una columna, cambiar el separador a punto y coma.
+  - Opcional, no hecho: límite de fechas de gastos e historial de gastos borrados.
+- Decisiones: precio y aforo en la tabla settings (con respaldo en TICKET_PRICE y EVENT_CAPACITY); las páginas públicas se regeneran cada 60 s; recaudado = suma de monto_pagado de pagados e ingresados (los cancelados no cuentan).
+- Datos de prueba: DNI 10000006 (pagado, nombre "Prueba Ñandú Pérez").

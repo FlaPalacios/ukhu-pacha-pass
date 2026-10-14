@@ -1,5 +1,5 @@
 import { FormAccion } from "@/components/form-accion";
-import { precioEntrada } from "@/config/evento";
+import { obtenerConfig } from "@/lib/config";
 import { exigirAdmin } from "@/lib/admin";
 import { accionCrearAsistente } from "../../../acciones";
 
@@ -8,6 +8,7 @@ const campo = "mt-1 w-full rounded border border-borde bg-tarjeta px-3 py-2";
 export default async function Nuevo({ searchParams }: PageProps<"/admin/asistentes/nuevo">) {
   await exigirAdmin();
   const enPuerta = (await searchParams).origen === "puerta";
+  const { precio } = await obtenerConfig();
 
   return (
     <div className="max-w-xl">
@@ -59,7 +60,7 @@ export default async function Nuevo({ searchParams }: PageProps<"/admin/asistent
           </label>
           <label className="mt-3 block">
             Monto recibido (S/)
-            <input name="monto" inputMode="decimal" defaultValue={precioEntrada()} className={`${campo} max-w-40`} />
+            <input name="monto" inputMode="decimal" defaultValue={precio} className={`${campo} max-w-40`} />
           </label>
           <label className="mt-3 flex gap-3">
             <input type="checkbox" name="ingresar" defaultChecked={enPuerta} className="mt-1 h-5 w-5 accent-naranja" />

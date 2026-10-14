@@ -11,8 +11,4 @@ export const evento = {
   coordinadores: "Coordinadores por confirmar",
 };
 
-// Precio de la entrada en soles. Desde la fase 2 se toma de la tabla settings.
-export function precioEntrada(): number {
-  const n = Number(process.env.TICKET_PRICE ?? 20);
-  return Number.isFinite(n) && n > 0 ? n : 20;
-}
+// El precio y el aforo están en la tabla settings (src/lib/config.ts).

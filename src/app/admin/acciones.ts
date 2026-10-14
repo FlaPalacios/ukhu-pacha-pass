@@ -18,8 +18,11 @@ import { dentroDelLimite, huellaIp } from "@/lib/limite-intentos";
 import type { ResultadoAccion } from "@/lib/resultado";
 import { abrirSesionAdmin, cerrarSesion } from "@/lib/sesion";
 import { supabaseServidor } from "@/lib/supabase-servidor";
+import { guardarConfig } from "@/lib/config";
 import {
+  configSchema,
   edicionSchema,
+  gastoSchema,
   idSchema,
   loginSchema,
   montoSchema,
@@ -200,6 +203,59 @@ export async function accionReenviar(id: string): Promise<ResultadoAccion> {
     registrarFallo("reenviar", e);
     return { error: ERROR_GENERAL };
   }
+}
+
+// Resumen, configuración y gastos
+
+function refrescarResumen() {
+  revalidatePath("/admin");
+  revalidatePath("/admin/gastos");
+}
+
+export async function accionGuardarConfig(_p: ResultadoAccion, fd: FormData): Promise<ResultadoAccion> {
+  await exigirAdmin();
+  const r = configSchema.safeParse(textosDe(fd));
+  if (!r.success) return { error: r.error.issues[0].message };
+  try {
+    await guardarConfig(r.data);
+  } catch (e) {
+    registrarFallo("guardar configuración", e);
+    return { error: ERROR_GENERAL };
+  }
+  refrescarResumen();
+  // Las páginas públicas muestran el precio.
+  revalidatePath("/");
+  revalidatePath("/registro");
+  revalidatePath("/registro/listo");
+  return { ok: "Configuración guardada." };
+}
+
+export async function accionCrearGasto(_p: ResultadoAccion, fd: FormData): Promise<ResultadoAccion> {
+  const admin = await exigirAdmin();
+  const r = gastoSchema.safeParse(textosDe(fd));
+  if (!r.success) return { error: r.error.issues[0].message };
+  const { error } = await supabaseServidor()
+    .from("expenses")
+    .insert({ concepto: r.data.concepto, monto: r.data.monto, fecha: r.data.fecha, creado_por: admin.id });
+  if (error) {
+    registrarFallo("crear gasto", new Error(`insert falló (${error.code})`));
+    return { error: ERROR_GENERAL };
+  }
+  refrescarResumen();
+  return { ok: "Gasto agregado." };
+}
+
+export async function accionEliminarGasto(id: string): Promise<ResultadoAccion> {
+  await exigirAdmin();
+  const vid = idSchema.safeParse(id);
+  if (!vid.success) return { error: "Gasto no válido." };
+  const { error } = await supabaseServidor().from("expenses").delete().eq("id", vid.data);
+  if (error) {
+    registrarFallo("eliminar gasto", new Error(`delete falló (${error.code})`));
+    return { error: ERROR_GENERAL };
+  }
+  refrescarResumen();
+  return { ok: "Gasto eliminado." };
 }
 
 // Datos
