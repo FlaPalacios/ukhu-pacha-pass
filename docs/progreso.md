@@ -6,7 +6,7 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 |---|---|---|---|
 | 0. Preparación | Mar 13 | APROBADA | Mar 13 |
 | 1. Registro público | Mié 14 a Vie 16 | APROBADA | Mar 13 |
-| 2. Panel admin | Vie 16 a Dom 18 | Pendiente | |
+| 2. Panel admin | Vie 16 a Dom 18 | APROBADA | Mar 13 |
 | 3. QR y correo | Lun 19 a Mié 21 | Pendiente | |
 | 4. Escáner | Jue 22 a Vie 23 | Pendiente | |
 | 5. Resumen y gastos | Sáb 24 | Pendiente | |
@@ -41,3 +41,19 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
   - Fase 5: neutralizar en el CSV las celdas que empiecen con =, +, - o @.
   - Fase 8: borrar `rate_limits` en el script de limpieza.
 - Datos de prueba en la base: una fila ficticia (DNI 10000001) y claves `prueba:*` en `rate_limits`. Se pueden borrar desde el Table Editor.
+
+### Fase 2: Panel admin. Martes 13 de octubre. APROBADA
+
+- Criterio: un admin marca pagos y los cambios quedan en el historial. Probado en local contra Supabase con una sesión de admin firmada con SESSION_SECRET (el login con contraseña real lo prueba el usuario).
+- Probado en el navegador: lista, búsqueda (nombre, código), filtros con conteos, marcar pagado, revertir, cancelar (exige confirmación), reactivar, editar (DNI inválido muestra error sin borrar lo escrito; es_menor y notas guardados), registro manual con pago inmediato y origen puerta, DNI repetido rechazado, salir.
+- Prueba 13.2: pagar, revertir, cancelar, reactivar y volver a pagar conserva el código (RYTYPQ) y el token. Historial con los 5 movimientos.
+- Atomicidad: 6 llamadas simultáneas a marcar_pagado sobre el mismo asistente, exactamente 1 aceptada.
+- Acceso: sin cookie o con firma falsa, /admin/asistentes redirige a /admin/login. Con la clave anon, admin_profiles, payment_log y las RPC devuelven 401.
+- tsc, lint y build sin errores. No hay `npm test`. Sin claves en el bundle del cliente.
+- revisor-seguridad: sin CRÍTICOS ni ALTOS. Corregidos: MEDIO (no se podía quitar el acceso a un admin con historial; ahora `activo` y `sesion_desde` en admin_profiles, migración 0003), BAJO (salir invalida la sesión en el servidor) y BAJO (adminActual exige rol admin explícito).
+- Pendientes:
+  - El usuario debe ejecutar `supabase/migrations/0003_sesiones_admin.sql` antes de publicar; sin ella el panel no deja entrar.
+  - El usuario prueba el login real en local y en Vercel, y revisa que la cookie salga con Secure en producción.
+  - Fase 4: el rol guardia debe usar un id que no pueda coincidir con un admin.
+- Decisiones: token y código corto se generan al marcar pagado (adelantado de la fase 3, como dice la sección 8). Cache Components de Next 16 desactivado. `/admin` redirige a la lista hasta la fase 5. Correo opcional en el registro manual.
+- Datos de prueba: DNI 10000001 y 10000002 (pagados).

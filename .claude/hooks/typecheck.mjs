@@ -19,6 +19,15 @@ const raiz = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 if (!existsSync(join(raiz, "tsconfig.json"))) process.exit(0);
 if (!existsSync(join(raiz, "node_modules", "typescript"))) process.exit(0);
 
+// Next 16 genera aparte los tipos de rutas (PageProps, LayoutProps). Sin esto,
+// cada ruta nueva da un falso error hasta el próximo build.
+spawnSync("npx", ["--no-install", "next", "typegen"], {
+  cwd: raiz,
+  encoding: "utf8",
+  shell: true,
+  timeout: 60000,
+});
+
 const r = spawnSync("npx", ["--no-install", "tsc", "--noEmit", "--pretty", "false"], {
   cwd: raiz,
   encoding: "utf8",

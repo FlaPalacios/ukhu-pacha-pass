@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
+  // Sin Cache Components: las pantallas de admin y puerta leen la sesión en cada pedido.
   // Cabeceras de seguridad básicas: no se deja incrustar el sitio en otra página.
   headers() {
     return [
@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {

@@ -50,4 +50,26 @@ El esquema está en `supabase/migrations/`. Cada archivo se pega, en orden, en e
 
 ## Crear admins
 
-Se documenta en la fase 2.
+No hay registro público de admins. Para cada uno de los 5:
+
+1. Supabase > Authentication > Users > Add user > Create new user. Correo, contraseña y "Auto Confirm User" marcado.
+2. Supabase > SQL Editor, cambiando el nombre y el correo:
+
+```sql
+insert into public.admin_profiles (id, nombre)
+select id, 'Nombre del admin' from auth.users where email = 'correo@ejemplo.com';
+```
+
+Un usuario de Auth sin fila en `admin_profiles` no puede entrar al panel.
+
+Para quitarle el acceso a un admin (por ejemplo, si pierde el celular), no borres su fila: su historial de pagos depende de ella. Desactívalo, y sus sesiones abiertas dejan de servir de inmediato:
+
+```sql
+update public.admin_profiles set activo = false where nombre = 'Nombre del admin';
+```
+
+Para cerrar sus sesiones sin desactivarlo: `update public.admin_profiles set sesion_desde = now() where nombre = '...';`. "Salir" en el panel hace lo mismo con la propia sesión.
+
+Además, en Authentication > Sign In / Providers, desactiva "Allow new users to sign up".
+
+El panel está en `/admin`. La sesión dura 12 horas y usa una cookie firmada con `SESSION_SECRET`.
