@@ -7,7 +7,7 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 | 0. Preparación | Mar 13 | APROBADA | Mar 13 |
 | 1. Registro público | Mié 14 a Vie 16 | APROBADA | Mar 13 |
 | 2. Panel admin | Vie 16 a Dom 18 | APROBADA | Mar 13 |
-| 3. QR y correo | Lun 19 a Mié 21 | Pendiente | |
+| 3. QR y correo | Lun 19 a Mié 21 | APROBADA | Mar 13 |
 | 4. Escáner | Jue 22 a Vie 23 | Pendiente | |
 | 5. Resumen y gastos | Sáb 24 | Pendiente | |
 | 6. Pulido visual | Dom 25 | Pendiente | |
@@ -57,3 +57,14 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
   - Fase 4: el rol guardia debe usar un id que no pueda coincidir con un admin.
 - Decisiones: token y código corto se generan al marcar pagado (adelantado de la fase 3, como dice la sección 8). Cache Components de Next 16 desactivado. `/admin` redirige a la lista hasta la fase 5. Correo opcional en el registro manual.
 - Datos de prueba: DNI 10000001 y 10000002 (pagados).
+
+### Fase 3: QR y correo. Martes 13 de octubre. APROBADA
+
+- Criterio: un pagado recibe un correo con QR legible. Probado por el usuario con su correo: llegó, el QR se lee (`UPP:<token>`) y el enlace abre la entrada. `correo_enviado_en` quedó registrado en los dos asistentes de prueba.
+- `/entrada/[token]`: token válido muestra QR, código y nombre, sin DNI. Token inventado o texto basura: "Entrada no encontrada". noindex y force-dynamic.
+- `/admin/correos`: resumen (por enviar, con error, enviados, sin correo), lote con tope 40, reintento de fallidos. Reenvío individual y enlace para WhatsApp en la ficha.
+- tsc, lint y build sin errores. No hay `npm test`. Sin secretos en el bundle del cliente. `npm audit --omit=dev` sin vulnerabilidades (nodemailer fijado en 10.0.10: <=10.0.8 tiene avisos altos y 10.1.0 era de hace 3 días).
+- revisor-seguridad: sin CRÍTICOS ni ALTOS. Corregidos los 5 BAJOS: un solo lote a la vez (reserva atómica en rate_limits por 60 s), rechazos 4xx de Gmail detienen el lote, si el correo salió y solo falla el guardado no se marca error a la persona, timeouts de 10 s en la conexión SMTP, y en producción el envío exige APP_URL con https.
+- Prueba 13.3 (fallo de correo y reintento): la lógica está y fue revisada, pero el fallo por dirección rechazada no se simuló contra Gmail. Requiere prueba manual en la fase 7: poner a mano `correo_error` en un registro de prueba y usar "Reintentar".
+- Pendientes: cargar `APP_URL=https://ukhu-pacha-pass.vercel.app`, `GMAIL_USER` y `GMAIL_APP_PASSWORD` en Vercel. Revisar en producción que la cookie salga con Secure (pendiente de la fase 2).
+- Decisión fuera del plan: columna `attendees.correo_error` (la sección 8 pide registrar el error del envío).

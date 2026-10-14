@@ -4,7 +4,15 @@ import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { adminActual, exigirAdmin, invalidarSesiones } from "@/lib/admin";
-import { cancelarRegistro, marcarPagado, revertirPago } from "@/lib/asistentes";
+import { z } from "zod";
+import {
+  cancelarRegistro,
+  marcarPagado,
+  paraEnviar,
+  revertirPago,
+  unoParaEnviar,
+} from "@/lib/asistentes";
+import { enviarLote, MAX_LOTE, reservarLote } from "@/lib/envios";
 import { dentroDelLimite, huellaIp } from "@/lib/limite-intentos";
 import type { ResultadoAccion } from "@/lib/resultado";
 import { abrirSesion, cerrarSesion } from "@/lib/sesion";
@@ -141,6 +149,54 @@ export async function accionCancelar(
       : { error: "No se canceló: el estado ya cambió." };
   } catch (e) {
     registrarFallo("cancelar", e);
+    return { error: ERROR_GENERAL };
+  }
+}
+
+// Correo del QR
+
+const loteSchema = z.object({
+  tipo: z.enum(["nuevos", "fallidos"]),
+  cantidad: z.coerce.number().int().min(1).max(MAX_LOTE),
+});
+
+export async function accionEnviarLote(_p: ResultadoAccion, fd: FormData): Promise<ResultadoAccion> {
+  await exigirAdmin();
+  const r = loteSchema.safeParse(textosDe(fd));
+  if (!r.success) return { error: `Elige una cantidad entre 1 y ${MAX_LOTE}.` };
+
+  try {
+    const filas = await paraEnviar(r.data.cantidad, r.data.tipo === "fallidos");
+    if (filas.length === 0) return { ok: "No hay nadie para enviar en este grupo." };
+    if (!(await reservarLote())) {
+      return { error: "Hay un lote en curso o recién enviado. Espera un minuto y vuelve a intentar." };
+    }
+    const res = await enviarLote(filas);
+    revalidatePath("/admin/correos");
+    const resumen = `Enviados: ${res.enviados}. Con error: ${res.fallidos}.`;
+    return res.detenido ? { error: `${res.detenido} ${resumen}` } : { ok: resumen };
+  } catch (e) {
+    registrarFallo("enviar lote", e);
+    return { error: ERROR_GENERAL };
+  }
+}
+
+export async function accionReenviar(id: string): Promise<ResultadoAccion> {
+  await exigirAdmin();
+  const vid = idSchema.safeParse(id);
+  if (!vid.success) return { error: "Registro no válido." };
+
+  try {
+    const fila = await unoParaEnviar(vid.data);
+    if (!fila) return { error: "Solo se envía a registros pagados con correo." };
+    const res = await enviarLote([fila]);
+    refrescar(vid.data);
+    if (res.detenido) return { error: res.detenido };
+    return res.enviados === 1
+      ? { ok: "Correo enviado." }
+      : { error: "Gmail no aceptó esta dirección. Revisa el correo y vuelve a intentar." };
+  } catch (e) {
+    registrarFallo("reenviar", e);
     return { error: ERROR_GENERAL };
   }
 }

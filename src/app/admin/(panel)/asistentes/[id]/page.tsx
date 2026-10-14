@@ -4,13 +4,15 @@ import { Estado } from "@/components/estado";
 import { FormAccion } from "@/components/form-accion";
 import { precioEntrada } from "@/config/evento";
 import { exigirAdmin } from "@/lib/admin";
-import { historialPagos, obtenerAsistente, type MovimientoPago } from "@/lib/asistentes";
+import { historialPagos, obtenerAsistente, tokenDe, type MovimientoPago } from "@/lib/asistentes";
+import { urlEntrada } from "@/lib/correo";
 import { fechaHora, soles } from "@/lib/formato";
 import { idSchema } from "@/lib/validacion";
 import {
   accionCancelar,
   accionEditar,
   accionMarcarPagado,
+  accionReenviar,
   accionRevertir,
 } from "../../../acciones";
 
@@ -24,6 +26,9 @@ const ORIGEN = { web: "Formulario web", admin: "Registro manual", puerta: "Regis
 
 const campo = "mt-1 w-full rounded border border-borde bg-fondo px-3 py-2";
 
+// El reenvío del QR corre en esta página: margen para la conexión con Gmail.
+export const maxDuration = 30;
+
 export default async function Ficha({ params, searchParams }: PageProps<"/admin/asistentes/[id]">) {
   await exigirAdmin();
   const { id } = await params;
@@ -33,6 +38,8 @@ export default async function Ficha({ params, searchParams }: PageProps<"/admin/
   const a = await obtenerAsistente(id);
   if (!a) notFound();
   const historial = await historialPagos(id);
+  const token = a.estado === "pagado" ? await tokenDe(id) : null;
+  const enlace = token ? urlEntrada(token) : null;
   const ultimoPago = historial.find((h) => h.accion === "marcar_pagado");
 
   return (
@@ -69,7 +76,13 @@ export default async function Ficha({ params, searchParams }: PageProps<"/admin/
                 {ultimoPago?.admin && `, por ${ultimoPago.admin.nombre}`}
               </Dato>
             )}
-            <Dato t="Correo QR">{a.correo_enviado_en ? fechaHora(a.correo_enviado_en) : "No enviado"}</Dato>
+            <Dato t="Correo QR">
+              {a.correo_enviado_en
+                ? `Enviado ${fechaHora(a.correo_enviado_en)}`
+                : a.correo_error
+                  ? <span className="text-rosa">Falló ({a.correo_error})</span>
+                  : "No enviado"}
+            </Dato>
             {a.ingresado_en && (
               <Dato t="Ingreso">
                 {fechaHora(a.ingresado_en)}, {a.ingresado_por}
@@ -126,6 +139,31 @@ export default async function Ficha({ params, searchParams }: PageProps<"/admin/
 
             {a.estado === "ingresado" && <p className="font-lora">Ya ingresó. Su pago no se puede cambiar.</p>}
           </div>
+
+          {a.estado === "pagado" && (
+            <>
+              <h2 className="mt-8 text-2xl">Entrada</h2>
+              <div className="mt-3 space-y-4 rounded border border-borde bg-tarjeta p-4 font-lora text-base">
+                {enlace && (
+                  <p className="break-all">
+                    Enlace para WhatsApp:{" "}
+                    <a href={enlace} target="_blank" rel="noreferrer" className="underline underline-offset-4">
+                      {enlace}
+                    </a>
+                  </p>
+                )}
+                {a.correo ? (
+                  <FormAccion
+                    accion={accionReenviar.bind(null, a.id)}
+                    boton={a.correo_enviado_en ? "Reenviar QR por correo" : "Enviar QR por correo"}
+                    variante="secundario"
+                  />
+                ) : (
+                  <p className="text-apagado">Sin correo: comparte el enlace.</p>
+                )}
+              </div>
+            </>
+          )}
 
           <h2 className="mt-8 text-2xl">Historial</h2>
           <ul className="mt-3 divide-y divide-borde rounded border border-borde bg-tarjeta font-lora text-base">

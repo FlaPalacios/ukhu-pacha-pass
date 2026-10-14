@@ -25,6 +25,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
           <nav className="flex flex-wrap gap-x-5 gap-y-1 font-lora text-base">
             <Link href="/admin/asistentes">Asistentes</Link>
             <Link href="/admin/asistentes/nuevo">Registro manual</Link>
+            <Link href="/admin/correos">Enviar QR</Link>
           </nav>
           <div className="ml-auto flex items-center gap-4 font-lora text-sm text-apagado">
             <span>{admin.nombre}</span>
