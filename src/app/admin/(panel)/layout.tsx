@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Chakana, Franja } from "@/components/motivos";
+import Image from "next/image";
+import { Franja } from "@/components/motivos";
 import { exigirAdmin } from "@/lib/admin";
 import { salir } from "../acciones";
 
@@ -19,7 +20,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
       <header className="border-b border-borde">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Link href="/admin/asistentes" className="flex items-center gap-2 text-amarillo">
-            <Chakana className="h-6 w-6" />
+            <Image src="/mascara.webp" alt="" width={28} height={32} className="h-8 w-auto" />
             <span className="text-xl">Panel</span>
           </Link>
           <nav className="flex flex-wrap gap-x-5 gap-y-1 font-lora text-base">

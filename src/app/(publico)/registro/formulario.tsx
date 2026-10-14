@@ -29,7 +29,7 @@ export function FormularioRegistro() {
   const v = estado.valores ?? {};
 
   return (
-    <form action={accion} onSubmit={alEnviar} noValidate className="mt-8 space-y-6">
+    <form action={accion} onSubmit={alEnviar} noValidate className="space-y-7">
       <Campo
         nombre="dni"
         etiqueta="DNI"
@@ -92,7 +92,7 @@ export function FormularioRegistro() {
       <button
         type="submit"
         disabled={enviando}
-        className="w-full rounded bg-naranja px-6 py-4 text-2xl text-tinta disabled:opacity-60"
+        className="w-full rounded bg-naranja px-6 py-5 text-2xl text-tinta transition-colors hover:bg-amarillo disabled:opacity-60"
       >
         {enviando ? "Registrando..." : "Registrarme"}
       </button>
@@ -113,11 +113,11 @@ function Campo({ nombre, etiqueta, ayuda, error, valor, ...resto }: PropsCampo) 
   const idError = `${nombre}-error`;
   return (
     <div>
-      <label htmlFor={nombre} className="block text-xl">
+      <label htmlFor={nombre} className="block text-2xl">
         {etiqueta}
       </label>
       {ayuda && (
-        <p id={idAyuda} className="font-lora text-sm text-apagado">
+        <p id={idAyuda} className="font-lora text-base text-apagado">
           {ayuda}
         </p>
       )}
@@ -130,13 +130,13 @@ function Campo({ nombre, etiqueta, ayuda, error, valor, ...resto }: PropsCampo) 
         required
         aria-invalid={error ? true : undefined}
         aria-describedby={[ayuda && idAyuda, error && idError].filter(Boolean).join(" ") || undefined}
-        className={`mt-2 w-full rounded border bg-tarjeta px-4 py-3 font-lora text-lg ${
+        className={`mt-2 w-full rounded border bg-fondo/80 px-4 py-3.5 font-lora text-xl ${
           error ? "border-rosa" : "border-borde"
         }`}
         {...resto}
       />
       {error && (
-        <p id={idError} className="mt-2 font-lora text-sm text-rosa">
+        <p id={idError} className="mt-2 font-lora text-base text-rosa">
           {error}
         </p>
       )}
@@ -160,14 +160,14 @@ function Casilla({
         <input
           type="checkbox"
           name={nombre}
-          className="mt-1 h-5 w-5 shrink-0 accent-naranja"
+          className="mt-1.5 h-6 w-6 shrink-0 accent-naranja"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? idError : undefined}
         />
         <span>{children}</span>
       </label>
       {error && (
-        <p id={idError} className="mt-2 font-lora text-sm text-rosa">
+        <p id={idError} className="mt-2 font-lora text-base text-rosa">
           {error}
         </p>
       )}

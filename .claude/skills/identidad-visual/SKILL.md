@@ -34,6 +34,18 @@ No usar verde lima ni morado claro.
 - Sin emojis. Sin íconos genéricos en cuadrículas de tres tarjetas. Sin portadas con frases vacías.
 - Información real y concreta (fecha, hora, precio, cómo pagar). Pocas pantallas, mucho espacio, jerarquía clara.
 
+## Atmósfera de la parte pública (pedido del usuario, 14 oct)
+
+Solo en las páginas públicas (`/`, `/registro`, `/registro/listo`, `/entrada/[token]`), agrupadas en `src/app/(publico)`. Nunca en el panel de admin ni en `/puerta`.
+
+- Niebla en capas (`components/atmosfera.tsx`, `public/niebla.svg`) que deriva despacio, concentrada abajo y desvanecida en los bordes. Es la única excepción a "sin degradados": los bordes suaves de la niebla y su máscara.
+- Grano fino de película sobre toda la página (`public/grano.svg`, opacidad 6 %).
+- Un solo momento animado: la máscara del logo sale de la niebla al cargar y luego flota muy suave. No agregar animaciones de entrada por sección ni efectos en cada tarjeta.
+- Todo se detiene con `prefers-reduced-motion`.
+- El QR de `/entrada` va siempre sobre blanco y sin animación.
+- Logo: la máscara (`public/mascara.webp`) como imagen; el nombre siempre como texto en amarillo con IM Fell (el nombre del PNG original es morado oscuro y no se lee sobre el fondo).
+- Ancho: en pantallas grandes el contenido ocupa cerca del 70 % (`CONTENEDOR` en `atmosfera.tsx`). Texto del cuerpo de 19 a 21 px.
+
 ## Estados
 
 Pendiente en naranja. Pagado en menta. Ingresado en morado base con texto claro. Cancelado en gris sobre fondo oscuro. Error o alerta en rosa.

@@ -33,3 +33,88 @@ body {
   outline: 2px solid var(--color-naranja);
   outline-offset: 2px;
 }
+
+/* Atmósfera de la parte pública (pedido del usuario, 14 oct): niebla, grano y una sola
+   aparición orquestada. El panel de admin y la puerta no la usan. */
+
+.grano {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-image: url("/grano.svg");
+  background-size: 240px 240px;
+  opacity: 0.06;
+}
+
+.niebla {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background-image: url("/niebla.svg");
+  background-size: 1400px 700px;
+  background-repeat: repeat;
+  animation: deriva var(--duracion, 120s) linear infinite;
+}
+
+.niebla-lenta {
+  --duracion: 180s;
+  animation-direction: reverse;
+}
+
+@keyframes deriva {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 1400px 0;
+  }
+}
+
+/* La máscara sale de la niebla al cargar y después respira muy despacio. */
+.aparece {
+  animation:
+    surgir 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    flotar 9s ease-in-out 2.4s infinite;
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes flotar {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* La niebla del primer plano se abre después de que la máscara empieza a verse. */
+.disipa {
+  animation: disipar 3s ease-out 0.4s both;
+}
+
+@keyframes disipar {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: var(--opacidad-final, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .niebla,
+  .aparece,
+  .disipa {
+    animation: none;
+  }
+}

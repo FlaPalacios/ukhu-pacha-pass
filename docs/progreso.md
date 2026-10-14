@@ -10,7 +10,7 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 | 3. QR y correo | Lun 19 a Mié 21 | APROBADA | Mar 13 |
 | 4. Escáner | Jue 22 a Vie 23 | APROBADA | Mié 14 |
 | 5. Resumen y gastos | Sáb 24 | APROBADA | Mié 14 |
-| 6. Pulido visual | Dom 25 | Pendiente | |
+| 6. Pulido visual | Dom 25 | APROBADA | Mié 14 |
 | 7. Pruebas | Lun 26 a Mié 28 | Pendiente | |
 | 8. Operación | Jue 29 a Vie 30 | Pendiente | |
 
@@ -96,3 +96,15 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
   - Opcional, no hecho: límite de fechas de gastos e historial de gastos borrados.
 - Decisiones: precio y aforo en la tabla settings (con respaldo en TICKET_PRICE y EVENT_CAPACITY); las páginas públicas se regeneran cada 60 s; recaudado = suma de monto_pagado de pagados e ingresados (los cancelados no cuentan).
 - Datos de prueba: DNI 10000006 (pagado, nombre "Prueba Ñandú Pérez").
+
+### Fase 6: Pulido visual. Miércoles 14 de octubre. APROBADA (primera pasada; el usuario seguirá pidiendo ajustes)
+
+- Pedido del usuario: textos más grandes, portada más limpia, en pantallas grandes ~70 % del ancho, ubicación con mapa o botón a Google Maps (a una cuadra del Colegio Santa María de los Andes), animaciones y fondos con niebla o textura (referencia: ghostsandgravestones.com), usar el logo Logo-Ukhu_Pacha_Pass.png, mantener los colores.
+- Hecho: logo recortado (el PNG traía el cuadriculado pintado) en public/mascara.webp e ícono src/app/icon.png; páginas públicas en src/app/(publico) con niebla en capas que deriva (public/niebla.svg), grano (public/grano.svg) y un solo momento animado (la máscara sale de la niebla y flota); portada nueva (nombre grande, datos en franja, pasos, aviso de edad, Dónde con mapa embebido oscuro y botón a Google Maps, cierre con cerros); registro, confirmación y entrada a dos columnas en escritorio y con texto más grande; la máscara reemplaza a la chakana como logo en encabezados y panel.
+- Revisión contra identidad-visual, pantalla por pantalla, capturas reales a 390 px (emulación de celular por el protocolo de Chrome) y 1440 px: portada, registro, confirmación, entrada, login, resumen, asistentes, gastos y puerta. Sin desborde horizontal en ninguna. Puerta sin niebla ni grano (verificado en el HTML). QR de la entrada sobre blanco y sin animación. prefers-reduced-motion detiene todo.
+- Excepción documentada en la skill identidad-visual: la niebla usa bordes suaves (única excepción a "sin degradados"), solo en la parte pública.
+- tsc, lint y build sin errores. No hay `npm test`. Sin secretos en el bundle del cliente.
+- Pendientes:
+  - El mapa embebido no se dibuja en Chrome sin ventana (Google lo permite solo dentro de iframes; la URL /maps/embed responde 200 sin X-Frame-Options). Verificar en un navegador real. Si no carga, queda el texto de respaldo y el botón a Google Maps.
+  - Nombres reales de los coordinadores (src/config/evento.ts, PROVISIONAL).
+  - Ajustes visuales que pida el usuario.

@@ -1,15 +1,17 @@
+import Image from "next/image";
 import Link from "next/link";
 import { evento } from "@/config/evento";
-import { Chakana, Franja } from "./motivos";
+import { CONTENEDOR } from "./atmosfera";
+import { Franja } from "./motivos";
 
 export function Encabezado() {
   return (
-    <header>
+    <header className="relative z-10">
       <Franja />
-      <div className="mx-auto flex max-w-xl items-center gap-3 px-4 py-4">
+      <div className={`${CONTENEDOR} flex items-center py-4`}>
         <Link href="/" className="flex items-center gap-3 text-amarillo">
-          <Chakana className="h-8 w-8" />
-          <span className="text-2xl leading-none">{evento.nombre}</span>
+          <Image src="/mascara.webp" alt="" width={40} height={46} className="h-11 w-auto" />
+          <span className="text-2xl leading-none lg:text-3xl">{evento.nombre}</span>
         </Link>
       </div>
     </header>

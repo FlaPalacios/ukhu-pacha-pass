@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Niebla } from "@/components/atmosfera";
 import { Encabezado } from "@/components/encabezado";
 import { evento } from "@/config/evento";
 import { entradaPorToken } from "@/lib/asistentes";
@@ -17,9 +18,10 @@ export default async function Entrada({ params }: PageProps<"/entrada/[token]">)
   const datos = TOKEN_REGEX.test(token) ? await entradaPorToken(token) : null;
 
   return (
-    <>
+    <div className="relative isolate flex flex-1 flex-col">
+      <Niebla intensidad={0.45} />
       <Encabezado />
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-16">
+      <main className="relative mx-auto w-full max-w-lg flex-1 px-5 pt-6 pb-16">
         {!datos ? (
           <Aviso titulo="Entrada no encontrada">
             Revisa que el enlace esté completo. Si el problema sigue, habla con un coordinador.
@@ -38,15 +40,15 @@ export default async function Entrada({ params }: PageProps<"/entrada/[token]">)
           </Aviso>
         )}
       </main>
-    </>
+    </div>
   );
 }
 
 function Valida({ nombre, codigo, qr }: { nombre: string; codigo: string; qr: string }) {
   return (
     <>
-      <h1 className="text-4xl text-amarillo">Tu entrada</h1>
-      <p className="mt-2 text-xl">{nombre}</p>
+      <h1 className="text-5xl text-amarillo">Tu entrada</h1>
+      <p className="mt-3 text-2xl">{nombre}</p>
 
       <div className="mt-6 rounded bg-white p-3">
         {/* eslint-disable-next-line @next/next/no-img-element -- data URL generada en el servidor */}
@@ -56,7 +58,7 @@ function Valida({ nombre, codigo, qr }: { nombre: string; codigo: string; qr: st
       <p className="mt-6 font-lora text-sm text-apagado">Código de respaldo</p>
       <p className="font-lora text-4xl tracking-[0.3em]">{codigo}</p>
 
-      <dl className="mt-8 space-y-2 font-lora text-base">
+      <dl className="mt-8 space-y-2 font-lora text-lg">
         <div>
           <dt className="inline text-apagado">Fecha: </dt>
           <dd className="inline">{evento.fecha}</dd>
@@ -81,8 +83,8 @@ function Valida({ nombre, codigo, qr }: { nombre: string; codigo: string; qr: st
 
 function Aviso({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-rosa p-5">
-      <h1 className="text-3xl">{titulo}</h1>
+    <div className="rounded border border-rosa bg-fondo/80 p-6">
+      <h1 className="text-4xl">{titulo}</h1>
       <p className="mt-3">{children}</p>
     </div>
   );
