@@ -27,7 +27,7 @@ export function FormularioPin() {
         id="pin"
         name="pin"
         type="password"
-        autoCapitalize="none"
+        inputMode="numeric"
         autoComplete="off"
         required
         maxLength={32}

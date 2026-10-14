@@ -18,8 +18,9 @@ export async function accesoPuerta(): Promise<Acceso | null> {
   return admin ? { quien: admin.nombre, esAdmin: true } : null;
 }
 
-// Mínimo 8 caracteres: con el límite por IP, un PIN corto se puede adivinar rotando de conexión.
-const LARGO_MINIMO_PIN = 8;
+// Mínimo 6 caracteres. Decisión del usuario (14 oct): para una fiesta privada basta un PIN
+// de 6 dígitos junto con el límite de intentos por IP. Los revisores sugerían 8.
+const LARGO_MINIMO_PIN = 6;
 
 export function pinConfigurado(): boolean {
   return (process.env.GUARD_PIN ?? "").length >= LARGO_MINIMO_PIN;

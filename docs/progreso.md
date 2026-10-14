@@ -79,7 +79,7 @@ Registro de cierres de fase. Lo actualiza la skill `/cierre-de-fase`. Fechas seg
 - Vuelta 2, NO APROBADA: la conversión de "repetido" a "válido" en el cliente tras un timeout (agregada en la vuelta 1) podía dar un falso válido con un QR copiado. Eliminada por completo. Corregidos además: PIN con pedidos simultáneos (se reserva el intento antes de comparar), Origin mal formado, doble toque en Confirmar, cámara en pausa, IPv6.
 - Vuelta 3: probador-puerta LISTO, revisor-seguridad SIN BLOQUEOS. Corregido el BAJO de IPv4 escrita como IPv6.
 - Pendientes:
-  - El usuario debe cambiar GUARD_PIN a 8+ caracteres (hoy tiene 6) en .env.local y en Vercel. Hasta entonces nadie entra con PIN; los admins sí, con su sesión.
+  - Decisión del usuario (14 oct): el PIN se queda en 6 dígitos y el mínimo se bajó a 6. Riesgo aceptado (los revisores sugerían 8+ caracteres). Recomendación: que no sea obvio (123456, fechas conocidas).
   - Migración de la fase 5: agregar 'por_confirmar' a resultado_escaneo y registrar en scan_log la consulta por DNI y el "No coincide".
   - Capacitación (fase 8): tras un "Sin respuesta", si al reintentar sale "Ya ingresó" con su puesto y hora de segundos atrás, pedir el DNI físico o llamar a un admin. Los guardias usan datos móviles o el punto de acceso de la organización, no el WiFi del local (el límite de PIN es por IP).
   - Pruebas con celulares reales (fase 7): lista de 17 pasos del probador-puerta (cámara trasera Android/iPhone, QR en pantalla y papel, poca luz, tiempo < 2 s, modo avión, 3G lento, QR copiado, dos celulares, DNI y doble toque, cámara interrumpida, PIN, sesión vencida, registro rápido, menor, carga con 4 a 6 celulares).

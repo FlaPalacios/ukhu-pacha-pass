@@ -38,7 +38,7 @@ export default async function Puerta() {
           <FormularioPin />
         ) : (
           <p role="alert" className="mt-6 rounded border border-rosa p-5 text-xl">
-            El PIN de la puerta no está configurado (mínimo 8 caracteres). Los admins pueden entrar
+            El PIN de la puerta no está configurado (mínimo 6 caracteres). Los admins pueden entrar
             con su sesión.
           </p>
         )}
