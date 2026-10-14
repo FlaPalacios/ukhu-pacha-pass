@@ -1,6 +1,35 @@
 @import "tailwindcss";
 
+/* Paleta de la sección 11.2 del plan. Usar estos tokens, no valores sueltos. */
+@theme {
+  --color-fondo: #0a0a0a;
+  --color-tarjeta: #141414;
+  --color-borde: #1e1e1e;
+  --color-morado: #382054;
+  --color-morado-oscuro: #22123a;
+  --color-naranja: #f7931e;
+  --color-amarillo: #f2e94a;
+  --color-menta: #1fdb8a;
+  --color-rosa: #e8317f;
+  --color-texto: #edf3ef;
+  --color-tinta: #0a0a0a;
+  --color-apagado: #9a9f9c;
+}
+
+@theme inline {
+  --font-fell: var(--font-im-fell);
+  --font-lora: var(--font-lora-var);
+}
+
 body {
-  background: #0a0a0a;
-  color: #edf3ef;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-im-fell), Georgia, serif;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-naranja);
+  outline-offset: 2px;
 }
